@@ -4,8 +4,7 @@ const {todoValidator} = require('../middlewares/validators');
 
 const router = Router();
 
-router.get('/', todosController.getAll);
-router.get('/:id', todosController.getItem);
+router.get('/', todosController.get);
 router.post('/', todoValidator, todosController.add);
 router.put('/:id', todoValidator, todosController.update);
 router.delete('/:id', todosController.delete);

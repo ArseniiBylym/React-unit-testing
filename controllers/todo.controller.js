@@ -1,25 +1,12 @@
 const Todo = require('../models/Todos.model');
 const {validationResult} = require('express-validator');
 
-exports.getAll = async (req, res, next) => {
+exports.get = async (req, res, next) => {
   try {
     todos = await Todo.find().exec();
     return res.status(200).json(todos);
   } catch (error) {
     return res.status(404).json('Todos not found');
-  }
-};
-
-exports.getItem = async (req, res, next) => {
-  const {id} = req.params;
-  try {
-    const todo = await Todo.findById(id).exec();
-    if (!todo) {
-      throw new Error();
-    }
-    return res.status(200).json(todo);
-  } catch (error) {
-    return res.status(404).json('Todo not found');
   }
 };
 
