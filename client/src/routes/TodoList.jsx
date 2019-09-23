@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, {useEffect, useContext} from 'react';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import {MdAdd} from 'react-icons/md';
 
 import {Spinner, TodoItem, TodoModal, TodoSelect} from '../components';
 import {URL_PATH, fetchApi} from '../api';
-import {useFetch} from '../utils/customHooks';
+import TodosContext from '../context/todosContext';
 
 const useStyles = makeStyles(theme =>
   createStyles({
@@ -42,39 +42,47 @@ const useStyles = makeStyles(theme =>
 
 const TodoList = props => {
   const styles = useStyles();
-  const [filter, setFilter] = useState(0);
-  const {data, isLoading, error, updateItem, addItem, deleteItem} = useFetch(URL_PATH.TODOS);
+  const {todos, setTodos, addTodo, isLoading, setIsLoading, error, setError, filterType} = useContext(TodosContext);
 
-  const renderTodos = () =>
-    data
-      .filter(item => (filter === 1 ? item.done : filter === 2 ? !item.done : item))
-      .map(item => <TodoItem key={item._id} {...item} handleChange={handleChange} handleDelete={handleDelete} />);
+  useEffect(() => {
+    fetchTodos();
+  }, []);
 
-  const handleChange = async item => {
-    const res = await fetchApi.put(`${URL_PATH.TODOS}/${item._id}`, item);
-    updateItem(res.data);
+  const fetchTodos = async () => {
+    try {
+      const res = await fetchApi.get(URL_PATH.TODOS);
+      setIsLoading(false);
+      setTodos(res.data);
+    } catch (error) {
+      setIsLoading(false);
+      setError(error);
+    }
+  };
+
+  const renderTodos = () => {
+    return todos
+      .filter(item => (filterType === 1 ? item.done : filterType === 2 ? !item.done : item))
+      .map(item => {
+        const {_id, title, text, done} = item;
+        return <TodoItem key={_id} item={{_id, title, text, done}} />;
+      });
   };
 
   const handleAdd = async item => {
     const res = await fetchApi.post(URL_PATH.TODOS, item);
-    addItem(res.data);
-  };
-
-  const handleDelete = async id => {
-    const res = await fetchApi.delete(`${URL_PATH.TODOS}/${id}`);
-    deleteItem(res.data);
+    addTodo(res.data);
   };
 
   return (
     <div className={styles.root}>
       {error && (
-        <Typography variant="h3" color="textSecondary">
-          {error}
+        <Typography variant="h5" color="textSecondary">
+          {error.message}
         </Typography>
       )}
       {isLoading && <Spinner bgColor="#efefefa4" />}
-      {data && data.length && <TodoSelect filter={filter} handleChange={e => setFilter(e.target.value)} />}
-      {data && data.length && <div className={styles.todosWrapper}>{renderTodos()}</div>}
+      {todos && todos.length && <TodoSelect />}
+      {todos && todos.length && <div className={styles.todosWrapper}>{renderTodos()}</div>}
       <div className={styles.buttonWrapper}>
         <TodoModal button={<MdAdd />} title="Create new todo" iconColor="primary" handleSubmit={handleAdd} />
       </div>
