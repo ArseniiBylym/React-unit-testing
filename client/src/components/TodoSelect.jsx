@@ -1,11 +1,12 @@
-import React, {useContext} from 'react';
+import React from 'react';
+import {connect} from 'react-redux';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 import {FILTER_TYPES} from '../config/constants';
-import TodosContext from '../context/todosContext';
+import {setFilter} from '../store/actions/filter.actions';
 
 const useStyles = () =>
   makeStyles(theme =>
@@ -21,9 +22,8 @@ const useStyles = () =>
     }),
   )();
 
-const TodoSelect = () => {
+const TodoSelect = ({filterType, setFilterType}) => {
   const styles = useStyles();
-  const {filterType, setFilterType} = useContext(TodosContext)
   
   return (
     <div className={styles.root}>
@@ -39,4 +39,11 @@ const TodoSelect = () => {
   );
 };
 
-export default TodoSelect;
+const mapStateToProps = state => ({
+  filterType: state.filterReducer.filterType,
+});
+
+const mapDispatchToProps = dispatch => ({
+  setFilterType: (e) => dispatch(setFilter(e.target.value))
+});
+export default connect(mapStateToProps, mapDispatchToProps)(TodoSelect);

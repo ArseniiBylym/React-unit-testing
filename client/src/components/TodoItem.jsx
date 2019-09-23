@@ -1,4 +1,5 @@
-import React, {useContext} from 'react';
+import React from 'react';
+import {connect} from 'react-redux';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
@@ -7,9 +8,9 @@ import Paper from '@material-ui/core/Paper';
 import Fab from '@material-ui/core/Fab';
 import Checkbox from '@material-ui/core/Checkbox';
 import {MdEdit, MdDelete} from 'react-icons/md';
+
 import {TodoModal} from '.';
-import TodosContext from '../context/todosContext';
-import {URL_PATH, fetchApi} from '../api';
+import { toggleTodo, updateTodo, removeTodo } from '../store/actions/todos.actions';
 
 const useStyles = makeStyles(theme =>
   createStyles({
@@ -27,22 +28,16 @@ const useStyles = makeStyles(theme =>
   }),
 );
 
-const TodoItem = ({item}) => {
+const TodoItem = ({item, updateTodo, removeTodo}) => {
   const {_id, title, text, done} = item;
   const styles = useStyles();
-  const {updateTodo, deleteTodo} = useContext(TodosContext);
-
-  const handleChange = async item => {
-    const res = await fetchApi.put(`${URL_PATH.TODOS}/${item._id}`, item);
-    updateTodo(res.data);
-  };
 
   return (
     <div className={styles.root}>
       <Paper className={styles.paper}>
         <Grid container>
           <Grid item xs={2} sm={1}>
-            <Checkbox checked={done} onChange={() => handleChange({...item, done: !item.done})} color="primary" />
+            <Checkbox checked={done} onChange={() => updateTodo({...item, done: !item.done})} color="primary" />
           </Grid>
           <Grid item xs={6} sm={9}>
             <Typography variant="h6" color="primary">
@@ -56,7 +51,7 @@ const TodoItem = ({item}) => {
               title="Edit todo"
               buttonSize="small"
               todo={{title, text, _id}}
-              handleSubmit={handleChange}
+              handleSubmit={updateTodo}
             />
           </Grid>
           <Grid item xs={2} sm={1}>
@@ -65,7 +60,7 @@ const TodoItem = ({item}) => {
               color="secondary"
               aria-label="delete"
               className={styles.button}
-              onClick={() => deleteTodo(item._id)}
+              onClick={() => removeTodo(_id)}
             >
               <MdDelete />
             </Fab>
@@ -85,4 +80,10 @@ TodoItem.propTypes = {
   }),
 };
 
-export default TodoItem;
+const mapDispatchToProps = dispatch => ({
+  updateTodo: (todo) => dispatch(updateTodo(todo)),
+  removeTodo: (id) => dispatch(removeTodo(id))
+});
+
+
+export default connect(null, mapDispatchToProps)(TodoItem);

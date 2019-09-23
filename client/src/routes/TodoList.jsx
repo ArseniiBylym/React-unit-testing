@@ -1,11 +1,11 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useEffect} from 'react';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import {MdAdd} from 'react-icons/md';
+import {connect} from 'react-redux';
 
 import {Spinner, TodoItem, TodoModal, TodoSelect} from '../components';
-import {URL_PATH, fetchApi} from '../api';
-import TodosContext from '../context/todosContext';
+import {setTodos, addTodo} from '../store/actions/todos.actions';
 
 const useStyles = makeStyles(theme =>
   createStyles({
@@ -41,36 +41,19 @@ const useStyles = makeStyles(theme =>
 );
 
 const TodoList = props => {
+  const {todos, setTodos, addTodo, error, isLoading, filterType} = props;
   const styles = useStyles();
-  const {todos, setTodos, addTodo, isLoading, setIsLoading, error, setError, filterType} = useContext(TodosContext);
 
   useEffect(() => {
-    fetchTodos();
+    setTodos()
   }, []);
-
-  const fetchTodos = async () => {
-    try {
-      const res = await fetchApi.get(URL_PATH.TODOS);
-      setIsLoading(false);
-      setTodos(res.data);
-    } catch (error) {
-      setIsLoading(false);
-      setError(error);
-    }
-  };
 
   const renderTodos = () => {
     return todos
-      .filter(item => (filterType === 1 ? item.done : filterType === 2 ? !item.done : item))
       .map(item => {
         const {_id, title, text, done} = item;
         return <TodoItem key={_id} item={{_id, title, text, done}} />;
       });
-  };
-
-  const handleAdd = async item => {
-    const res = await fetchApi.post(URL_PATH.TODOS, item);
-    addTodo(res.data);
   };
 
   return (
@@ -84,10 +67,22 @@ const TodoList = props => {
       {todos && todos.length && <TodoSelect />}
       {todos && todos.length && <div className={styles.todosWrapper}>{renderTodos()}</div>}
       <div className={styles.buttonWrapper}>
-        <TodoModal button={<MdAdd />} title="Create new todo" iconColor="primary" handleSubmit={handleAdd} />
+        <TodoModal button={<MdAdd />} title="Create new todo" iconColor="primary" handleSubmit={addTodo} />
       </div>
     </div>
   );
 };
 
-export default TodoList;
+const mapStateToProps = state => ({
+  todos: state.todosReducer.todos
+    .filter(item => (state.filterReducer.filterType === 1 ? item.done : state.filterReducer.filterType === 2 ? !item.done : item)),
+  error: state.errorReducer.error,
+  isLoading: state.loadingReducer.isLoading
+});
+
+const mapDispatchToProps = dispatch => ({
+  setTodos: () => dispatch(setTodos()),
+  addTodo: (item) => dispatch(addTodo(item)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);

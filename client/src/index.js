@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
+import {Provider} from 'react-redux';
 import {Layout} from './components';
 import {MainRouter} from './routes';
 import './index.scss';
-import TodosContext from './context/todosContext';
+import store from './store';
 
 const App = () => (
-  <Layout>
-    <TodosContext.Provider>
+  <Provider store={store}>
+    <Layout>
       <MainRouter />
-    </TodosContext.Provider>
-  </Layout>
+    </Layout>
+  </Provider>
 );
 
 ReactDOM.render(<App />, document.getElementById('root'));
