@@ -1,7 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import TextField from '@material-ui/core/TextField';
+import {Field, reduxForm, initialize} from 'redux-form';
+import {connect} from 'react-redux';
 
 const useStyles = () =>
   makeStyles(theme =>
@@ -9,44 +11,65 @@ const useStyles = () =>
       root: {
         width: '300px',
       },
+      textField: {
+        width: '100%',
+      },
     }),
   )();
 
-const TodoForm = ({form, handleChange, handleKeyUp}) => {
+const validate = values => {
+  const errors = {};
+  const requiredFields = ['title', 'text'];
+  requiredFields.forEach(field => {
+    if (!values[field]) {
+      errors[field] = 'Field is required';
+    }
+  });
+  return errors;
+};
+
+const renderTextField = ({label, input, meta: {touched, invalid, error}, ...custom}) => {
+  return (
+    <TextField
+      label={label}
+      error={touched && invalid}
+      helperText={touched && invalid && error}
+      {...input}
+      {...custom}
+    />
+  );
+};
+
+let TodoForm = ({todo, handleEnterKey, initForm, ...rest}) => {
   const styles = useStyles();
+  useEffect(() => {
+    todo && initForm({title: todo.title, text: todo.text})
+  }, [])
 
   return (
     <form className={styles.root}>
-      <TextField
+      <Field
+        name="title"
+        component={renderTextField}
         label="Title"
-        className={styles.textField}
-        value={form.title}
-        onChange={handleChange('title')}
-        onKeyUp={handleKeyUp}
         margin="normal"
-        fullWidth
         autoFocus
-      />
-      <TextField
-        label="Text"
-        className={styles.textField}
-        value={form.text}
-        onChange={handleChange('text')}
-        onKeyUp={handleKeyUp}
-        margin="normal"
         fullWidth
+        onKeyUp={handleEnterKey}
       />
+      <Field name="text" component={renderTextField} label="Text" margin="normal" fullWidth onKeyUp={handleEnterKey} />
     </form>
   );
 };
 
-TodoForm.propTypes = {
-  form: PropTypes.shape({
-    title: PropTypes.string,
-    text: PropTypes.string,
-  }),
-  handleChange: PropTypes.func,
-  handleKeyUp: PropTypes.func,
-};
+TodoForm = reduxForm({
+  form: 'todo',
+  validate,
+})(TodoForm);
 
-export default TodoForm;
+
+const mapDispatchToProps = dispatch => ({
+  initForm: (data) => dispatch(initialize('todo', data))
+})
+
+export default connect(null, mapDispatchToProps)(TodoForm);

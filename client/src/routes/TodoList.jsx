@@ -64,8 +64,8 @@ const TodoList = props => {
         </Typography>
       )}
       {isLoading && <Spinner bgColor="#efefefa4" />}
-      {todos && todos.length && <TodoSelect />}
-      {todos && todos.length && <div className={styles.todosWrapper}>{renderTodos()}</div>}
+      {!error && !isLoading && <TodoSelect />}
+      {todos && !!todos.length && <div className={styles.todosWrapper}>{renderTodos()}</div>}
       <div className={styles.buttonWrapper}>
         <TodoModal button={<MdAdd />} title="Create new todo" iconColor="primary" handleSubmit={addTodo} />
       </div>

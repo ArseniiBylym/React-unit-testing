@@ -1,4 +1,6 @@
 import React, {useState, useEffect} from 'react';
+import {connect} from 'react-redux'
+import {initialize} from 'redux-form';
 import {createStyles, makeStyles} from '@material-ui/core/styles';
 import Fab from '@material-ui/core/Fab';
 import Dialog from '@material-ui/core/Dialog';
@@ -21,38 +23,28 @@ const useStyles = () =>
   )();
 
 const TodoModal = props => {
-  const {title, button, buttonSize, todo, iconColor, handleSubmit} = props;
+  const {title, button, buttonSize, todo, iconColor, handleSubmit, isInvalid, formValues, initForm} = props;
   const styles = useStyles();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({title: '', text: ''});
-
-  useEffect(() => {
-    todo && setForm({...todo});
-  }, [open]);
-
-  const handleChange = type => e => {
-    e.persist();
-    setForm(form => ({
-      ...form,
-      [type]: e.target.value,
-    }));
-  };
 
   const handleEnterKey = e => {
     e.persist();
     if (e.keyCode == '13') {
-      form.title && form.text && handleConfirm();
+      !isInvalid && handleConfirm();
     }
   };
 
   const handleConfirm = () => {
     setOpen(false);
-    handleSubmit(form);
+    handleSubmit({
+      ...formValues,
+      _id: todo && todo._id
+    });
   };
 
   const handleClose = () => {
     setOpen(false);
-    setForm({title: '', text: ''});
+    initForm({title: '', text: ''});
   };
 
   return (
@@ -63,13 +55,13 @@ const TodoModal = props => {
       <Dialog onClose={handleClose} open={open}>
         <DialogTitle id="simple-dialog-title">{title}</DialogTitle>
         <DialogContent>
-          <TodoForm form={form} handleChange={handleChange} handleKeyUp={handleEnterKey} />
+          <TodoForm  todo={todo} handleEnterKey={handleEnterKey}/>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleConfirm} color="primary" variant="contained" disabled={!form.title || !form.text}>
+          <Button onClick={handleConfirm} color="primary" variant="contained" disabled={isInvalid}>
             {todo ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
@@ -88,6 +80,16 @@ TodoModal.propTypes = {
   }),
   iconColor: PropTypes.string,
   handleSubmit: PropTypes.func,
+  isInvalid: PropTypes.bool
 };
 
-export default TodoModal;
+const mapStateToProps = state => ({
+  isInvalid: state.form.todo && !!state.form.todo.syncErrors,
+  formValues: state.form.todo && state.form.todo.values
+})
+
+const mapDispatchToProps = dispatch => ({
+  initForm: (data) => dispatch(initialize('todo', data))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoModal);

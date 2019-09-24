@@ -1,4 +1,5 @@
 import {createStore, combineReducers, applyMiddleware, compose} from 'redux';
+import {reducer as formReducer} from 'redux-form';
 import thunk from 'redux-thunk';
 
 import todosReducer from './reducers/todos';
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   errorReducer,
   loadingReducer,
   filterReducer,
+  form: formReducer
 });
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;

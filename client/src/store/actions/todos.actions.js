@@ -43,7 +43,8 @@ export const addTodo = item => async dispatch => {
   }
 };
 
-export const updateTodo = item => async (dispatch, getState) => {
+export const updateTodo = item => async (dispatch) => {
+  console.log(item)
   try {
     const res = await fetchApi.put(`${URL_PATH.TODOS}/${item._id}`, item);
     dispatch(update(res.data));
