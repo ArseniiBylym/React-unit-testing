@@ -1,7 +1,13 @@
-import {SET_TODOS, ADD_TODO, UPDATE_TODO, DELETE_TODO} from './actionTypes';
-import {fetchApi, URL_PATH} from '../../api';
-import {setError} from './error.actions';
-import { setLoading } from './loading.actions';
+import {
+  SET_TODOS_SAGA,
+  UPDATE_TODO_SAGA,
+  ADD_TODO_SAGA,
+  DELETE_TODO_SAGA,
+  SET_TODOS,
+  UPDATE_TODO,
+  ADD_TODO,
+  DELETE_TODO,
+} from './actionTypes';
 
 export const set = todos => ({
   type: SET_TODOS,
@@ -23,40 +29,7 @@ export const remove = id => ({
   payload: id,
 });
 
-export const setTodos = () => async dispatch => {
-  try {
-    const res = await fetchApi.get(URL_PATH.TODOS);
-    dispatch(set(res.data));
-  } catch (error) {
-    dispatch(setError(error.message));
-  } finally {
-    dispatch(setLoading(false))
-  }
-};
-
-export const addTodo = item => async dispatch => {
-  try {
-    const res = await fetchApi.post(URL_PATH.TODOS, item);
-    dispatch(add(res.data));
-  } catch (error) {
-    dispatch(setError(error.message));
-  }
-};
-
-export const updateTodo = item => async (dispatch, getState) => {
-  try {
-    const res = await fetchApi.put(`${URL_PATH.TODOS}/${item._id}`, item);
-    dispatch(update(res.data));
-  } catch (error) {
-    dispatch(setError(error.message));
-  }
-};
-
-export const removeTodo = id => async dispatch => {
-  try {
-    const res = await fetchApi.delete(`${URL_PATH.TODOS}/${id}`);
-    dispatch(remove(res.data));
-  } catch (error) {
-    dispatch(setError(error.message));
-  }
-};
+export const setTodos = () => ({type: SET_TODOS_SAGA});
+export const addTodo = item => ({type: ADD_TODO_SAGA, payload: item});
+export const updateTodo = item => ({type: UPDATE_TODO_SAGA, payload: item});
+export const removeTodo = id => ({type: DELETE_TODO_SAGA, payload: id});

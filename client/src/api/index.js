@@ -19,6 +19,7 @@ class FetchApi {
   };
 
   post = (url, data, params = undefined) => {
+    console.log({data})
     return axios(BASE_URL + url, {
       method: 'post',
       headers: this.constructor.commonHeaders(),
